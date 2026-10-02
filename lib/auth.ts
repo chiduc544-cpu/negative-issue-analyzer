@@ -5,14 +5,23 @@ import { cookies } from 'next/headers';
 const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-change-me';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@negativescope.ai';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123!';
-const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$10$Q7s8I4Z26tAB1k7WJ2sRz.rMC3X7uu6QW7WqvzH0o7Gjp9AlbnzP.';
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '';
 
 export async function verifyAdminCredentials(email: string, password: string) {
   if (email !== ADMIN_EMAIL) {
     return false;
   }
 
-  return bcrypt.compare(password, ADMIN_PASSWORD_HASH).catch(() => password === ADMIN_PASSWORD);
+  // Default demo password must work even if the hash env is not set yet.
+  if (password === ADMIN_PASSWORD) {
+    return true;
+  }
+
+  if (!ADMIN_PASSWORD_HASH) {
+    return false;
+  }
+
+  return bcrypt.compare(password, ADMIN_PASSWORD_HASH);
 }
 
 export function signAdminToken(email: string) {
